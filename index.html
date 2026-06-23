@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiet Burn — 静かに燃える</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Noto+Serif+JP:wght@200;300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+ :root {
+   --bg: #0e0d0b;
+   --bg-soft: #161410;
+   --ink: #e8e3d8;
+   --ink-soft: #8a8478;
+   --ink-faint: #4a463e;
+   --ember: #d97a3a;
+   --ember-soft: #8a4a26;
+   --gold: #c9a86a;
+   --line: #2a2722;
+   --line-soft: #1d1b17;
+ }
+
+ * { margin: 0; padding: 0; box-sizing: border-box; }
+
+ html, body {
+   background: var(--bg);
+   color: var(--ink);
+   font-family: 'Noto Serif JP', serif;
+   font-weight: 300;
+   line-height: 1.6;
+   min-height: 100vh;
+   overflow-x: hidden;
+ }
+
+ body::before {
+   content: '';
+   position: fixed;
+   inset: 0;
+   background:
+     radial-gradient(ellipse at 20% 10%, rgba(217, 122, 58, 0.06) 0%, transparent 50%),
+     radial-gradient(ellipse at 80% 90%, rgba(201, 168, 106, 0.04) 0%, transparent 50%);
+   pointer-events: none;
+   z-index: 0;
+ }
+
+ body::after {
+   content: '';
+   position: fixed;
+   inset: 0;
+   background-image:
+     repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 3px);
+   pointer-events: none;
+   z-index: 1;
+ }
+
+ .container {
+   max-width: 920px;
+   margin: 0 auto;
+   padding: 48px 24px 80px;
+   position: relative;
+   z-index: 2;
+ }
+
+ header {
+   text-align: center;
+   margin-bottom: 64px;
+   position: relative;
+ }
+
+ .eyebrow {
+   font-family: 'JetBrains Mono', monospace;
+   font-size: 10px;
+   letter-spacing: 0.4em;
+   color: var(--ember);
+   text-transform: uppercase;
+   margin-bottom: 16px;
+   opacity: 0;
+   animation: fadeIn 1s ease 0.2s forwards;
+ }
+
+ h1 {
+   font-family: 'Cormorant Garamond', serif;
+   font-weight: 300;
+   font-size: clamp(48px, 8vw, 88px);
+   line-height: 0.95;
+   letter-spacing: -0.02em;
+   margin-bottom: 8px;
+   opacity: 0;
+   animation: fadeIn 1.2s ease 0.4s forwards;
+ }
+
+ h1 .accent {
+   font-style: italic;
+   color: var(--gold);
+ }
+
+ .subtitle {
+   font-family: 'Noto Serif JP', serif;
+   font-size: 13px;
+   color: var(--ink-soft);
+   letter-spacing: 0.2em;
+   margin-top: 12px;
+   opacity: 0;
+   animation: fadeIn 1s ease 0.7s forwards;
+ }
+
+ .divider {
+   width: 1px;
+   height: 40px;
+   background: linear-gradient(to bottom, transparent, var(--ember), transparent);
+   margin: 32px auto 0;
+   opacity: 0;
+   animation: fadeIn 1s ease 0.9s forwards;
+ }
+
+ .section {
+   margin-bottom: 56px;
+   opacity: 0;
+   animation: fadeIn 0.8s ease forwards;
+ }
+ .section:nth-of-type(1) { animation-delay: 1.0s; }
+ .section:nth-of-type(2) { animation-delay: 1.2s; }
+ .section:nth-of-type(3) { animation-delay: 1.4s; }
+
+ .section-header {
+   display: flex;
+   align-items: baseline;
+   gap: 16px;
+   margin-bottom: 24px;
+   padding-bottom: 12px;
+   border-bottom: 1px solid var(--line);
+ }
+
+ .section-num {
+   font-family: 'JetBrains Mono', monospace;
+   font-size: 11px;
+   color: var(--ember);
+   letter-spacing: 0.2em;
+ }
+
+ .section-title {
+   font-family: 'Cormorant Garamond', serif;
+   font-size: 26px;
+   font-weight: 400;
+   letter-spacing: 0.01em;
+ }
+
+ .section-note {
+   font-size: 11px;
+   color: var(--ink-soft);
+   margin-left: auto;
+   letter-spacing: 0.05em;
+ }
+
+ .week-nav {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   background: var(--bg-soft);
+   border: 1px solid var(--line);
+   padding: 16px 20px;
+   margin-bottom: 24px;
+ }
+
+ .week-btn {
+   background: none;
+   border: 1px solid var(--line);
+   color: var(--ink-soft);
+   width: 36px;
+   height: 36px;
+   cursor: pointer;
+   font-family: 'JetBrains Mono', monospace;
+   transition: all 0.3s ease;
+ }
+
+ .week-btn:hover {
+   border-color: var(--ember);
+   color: var(--ember);
+ }
+
+ .week-label {
+   font-family: 'Cormorant Garamond', serif;
+   font-size: 22px;
+   letter-spacing: 0.02em;
+ }
+
+ .week-label .week-num {
+   color: var(--gold);
+   font-style: italic;
+ }
+
+ .week-progress {
+   font-family: 'JetBrains Mono', monospace;
+   font-size: 11px;
+   color: var(--ember);
+   letter-spacing: 0.1em;
+ }
+
+ .days {
+   display: grid;
+   grid-template-columns: 1fr;
+   gap: 12px;
+ }
+
+ .day {
+   background: var(--bg-soft);
+   border: 1px solid var(--line);
+   padding: 20px;
+   position: relative;
+   transition: all 0.4s ease;
+ }
+
+ .day.completed {
+   border-color: var(--ember-soft);
+   background: linear-gradient(135deg, var(--bg-soft) 0%, rgba(217, 122, 58, 0.05) 100%);
+ }
+
+ .day-header {
+   display: flex;
+   align-items: center;
+   gap: 16px;
+   margin-bottom: 16px;
+ }
+
+ .day-name {
+   font-family: 'Cormorant Garamond', serif;
+   font-size: 24px;
+   font-weight: 400;
+   width: 80px;
+ }
+
+ .day-name.weekend {
+   color: var(--gold);
+   font-style: italic;
+ }
+
+ .day-type {
+   font-family: 'JetBrains Mono', monospace;
+   font-size: 10px;
+   color: var(--ink-soft);
+   letter-spacing: 0.2em;
+   text-transform: uppercase;
+   padding: 4px 10px;
+   border: 1px solid var(--line);
+ }
+
+ .day-type.rest {
+   color: var(--ink-faint);
+   border-color: var(--line-soft);
+ }
+
+ .day-type.active {
+   color: var(--ember);
+   border-color: var(--ember-soft);
+ }
+
+ .day-type.move {
+   color: var(--gold);
+   border-color: var(--ember-soft);
+ }
+
+ .day-content {
+   color: var(--ink-soft);
+   font-size: 14px;
+   margin-bottom: 16px;
+   line-height: 1.7;
+   padding-left: 96px;
+ }
+
+ .tasks {
+   padding-left: 96px;
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+ }
+
+ .task {
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   cursor: pointer;
+   padding: 4px 0;
+   user-select: none;
+ }
+
+ .task .check {
+   width: 18px;
+   height: 18px;
+   border: 1px solid var(--ink-faint);
+   flex-shrink: 0;
+   position: relative;
+   transition: all 0.3s ease;
+ }
+
+ .task:hover .check {
+   border-color: var(--ember);
+ }
+
+ .task.done .check {
+   background: var(--ember);
+   border-color: var(--ember);
+ }
+
+ .task.done .check::after {
+   content: '';
+   position: absolute;
+   left: 4px;
+   top: 1px;
+   width: 6px;
+   height: 11px;
+   border-right: 1.5px solid var(--bg);
+   border-bottom: 1.5px solid var(--bg);
+   transform: rotate(45deg);
+ }
+
+ .task-label {
+   font-size: 13px;
+   color: var(--ink);
+   transition: color 0.3s ease;
+ }
+
+ .task.done .task-label {
+   color: var(--ink-soft);
+   text-decoration: line-through;
+   text-decoration-color: var(--ember-soft);
+ }
+
+ @media (min-width: 640px) {
+   .day-content, .tasks { padding-left: 0; }
+   .day { display: grid; grid-template-columns: 100px 1fr 1.2fr; gap: 24px; align-items: start; }
+   .day-header { margin-bottom: 0; flex-direction: column; align-items: flex-start; gap: 8px; }
+ }
+
+ .waist-section {
+   background: var(--bg-soft);
+   border: 1px solid var(--line);
+   padding: 32px;
+ }
+
+ .waist-input-row {
+   display: flex;
+   gap: 12px;
+   margin-bottom: 32px;
+   flex-wrap: wrap;
+ }
+
+ .waist-input-row input {
+   background: var(--bg);
+   border: 1px solid var(--line);
+   color: var(--ink);
+   padding: 10px 14px;
+   font-family: 'JetBrains Mono', monospace;
+   font-size: 14px;
+   flex: 1;
+   min-width: 120px;
+ }
+
+ .waist-input-row input:focus {
+   outline: none;
+   border-color: var(--ember);
+ }
+
+ .waist-input-row button {
+   background: var(--ember);
+   color: var(--bg);
+   border: none;
+   padding: 10px 20px;
+   font-family: 'JetBrains Mono', monospace;
+   font-size: 11px;
+   letter-spacing: 0.15em;
+   text-transform: uppercase;
+   cursor: pointer;
+   transition: all 0.3s ease;
+ }
+
+ .waist-input-row button:hover {
+   background: var(--gold);
+ }
+
+ .chart-wrap {
+   margin-bottom: 24px;
+ }
+
+ #chart {
+   width: 100%;
+   height: 220px;
+   display: block;
+ }
+
+ .waist-stats {
+   display: grid;
+   grid-template-columns: repeat(3, 1fr);
+   gap: 16px;
+   padding-top: 24px;
+   border-top: 1px solid var(--line);
+ }
+
+ .stat {
+   text-align: center;
+ }
+
+ .stat-label {
+   font-family: 'JetBrains Mono', monospace;
+   font-size: 9px;
+   color: var(--ink-soft);
+   letter-spacing: 0.2em;
+   text-transform: uppercase;
+   margin-bottom: 6px;
+ }
+
+ .stat-value {
+   font-family: 'Cormorant Garamond', serif;
+   font-size: 32px;
+   font-weight: 300;
+ }
+
+ .stat-value.positive { color: var(--ember); }
+ .stat-value.negative { color: var(--gold); }
+ .stat-unit {
+   font-size: 12px;
+   color: var(--ink-soft);
+   margin-left: 4px;
+ }
+
+ .history-list {
+   margin-top: 24px;
+   max-height: 200px;
+   overflow-y: auto;
+   border-top: 1px solid var(--line);
+   padding-top: 16px;
+ }
+
+ .history-item {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   padding: 8px 0;
+   font-size: 12px;
+   color: var(--ink-soft);
+   font-family: 'JetBrains Mono', monospace;
+   border-bottom: 1px solid var(--line-soft);
+ }
+
+ .history-item .delete-btn {
+   background: none;
+   border: none;
+   color: var(--ink-faint);
+   cursor: pointer;
+   font-size: 14px;
+   padding: 0 8px;
+ }
+
+ .history-item .delete-btn:hover { color: var(--ember); }
+
+ .note {
+   font-family: 'Cormorant Garamond', serif;
+   font-style: italic;
+   font-size: 18px;
+   color: var(--ink-soft);
+   text-align: center;
+   padding: 32px;
+   border-top: 1px solid var(--line);
+   border-bottom: 1px solid var(--line);
+   margin: 48px 0;
+   line-height: 1.5;
+ }
+
+ .note::before, .note::after {
+   content: '—';
+   color: var(--ember);
+   margin: 0 12px;
+ }
+
+ footer {
+   text-align: center;
+   margin-top: 80px;
+   padding-top: 32px;
+   border-top: 1px solid var(--line);
+   color: var(--ink-faint);
+   font-size: 11px;
+   letter-spacing: 0.2em;
+   font-family: 'JetBrains Mono', monospace;
+ }
+
+ .reset-btn {
+   background: none;
+   border: 1px solid var(--line);
+   color: var(--ink-faint);
+   padding: 8px 16px;
+   font-family: 'JetBrains Mono', monospace;
+   font-size: 10px;
+   letter-spacing: 0.15em;
+   cursor: pointer;
+   margin-top: 16px;
+   transition: all 0.3s ease;
+ }
+
+ .reset-btn:hover {
+   color: var(--ember);
+   border-color: var(--ember-soft);
+ }
+
+ @keyframes fadeIn {
+   from { opacity: 0; transform: translateY(8px); }
+   to { opacity: 1; transform: translateY(0); }
+ }
+
+ @keyframes ember-pulse {
+   0%, 100% { box-shadow: 0 0 0 0 rgba(217, 122, 58, 0); }
+   50% { box-shadow: 0 0 20px 0 rgba(217, 122, 58, 0.15); }
+ }
+
+ .day.just-completed {
+   animation: ember-pulse 1.5s ease;
+ }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+ <header>
+   <div class="eyebrow">Weekly Practice · Vol.001</div>
+   <h1>Quiet <span class="accent">Burn</span></h1>
+   <div class="subtitle">静かに、しかし確かに、燃やす。</div>
+   <div class="divider"></div>
+ </header>
+
+ <div class="section">
+   <div class="section-header">
+     <span class="section-num">01</span>
+     <span class="section-title">Weekly Ritual</span>
+     <span class="section-note" id="weekProgressText">— / 7 days</span>
+   </div>
+
+   <div class="week-nav">
+     <button class="week-btn" id="prevWeek">‹</button>
+     <div class="week-label">Week <span class="week-num" id="weekNum">1</span></div>
+     <div class="week-progress" id="weekProgress">0%</div>
+     <button class="week-btn" id="nextWeek">›</button>
+   </div>
+
+   <div class="days" id="days"></div>
+ </div>
+
+ <div class="note">
+   追い込むのではなく、巡らせる。
+ </div>
+
+ <div class="section">
+   <div class="section-header">
+     <span class="section-num">02</span>
+     <span class="section-title">Waist Journal</span>
+     <span class="section-note">cm</span>
+   </div>
+
+   <div class="waist-section">
+     <div class="waist-input-row">
+       <input type="date" id="waistDate">
+       <input type="number" id="waistValue" placeholder="腹囲 (cm)" step="0.1">
+       <button id="addWaist">RECORD</button>
+     </div>
+
+     <div class="chart-wrap">
+       <canvas id="chart"></canvas>
+     </div>
+
+     <div class="waist-stats">
+       <div class="stat">
+         <div class="stat-label">Latest</div>
+         <div class="stat-value" id="latestWaist">—<span class="stat-unit">cm</span></div>
+       </div>
+       <div class="stat">
+         <div class="stat-label">Change</div>
+         <div class="stat-value" id="changeWaist">—<span class="stat-unit">cm</span></div>
+       </div>
+       <div class="stat">
+         <div class="stat-label">Records</div>
+         <div class="stat-value" id="recordCount">0</div>
+       </div>
+     </div>
+
+     <div class="history-list" id="historyList"></div>
+   </div>
+ </div>
+
+ <div class="note">
+   体重より、まず形と疲労感。
+ </div>
+
+ <footer>
+   YOUR PRACTICE · STORED LOCALLY
+   <br>
+   <button class="reset-btn" id="resetBtn">RESET ALL DATA</button>
+ </footer>
+
+</div>
+
+<script>
+const weekPlan = [
+ {
+   day: 'Mon', jp: '月', type: 'active', typeLabel: 'ACTIVE',
+   title: 'ユミコア × 散歩',
+   desc: '肋骨・呼吸・骨盤を整えてから歩く。朝〜昼推奨。',
+   tasks: ['ユミコア 20分', '散歩 20〜30分']
+ },
+ {
+   day: 'Tue', jp: '火', type: 'move', typeLabel: 'BURN',
+   title: '下半身 × 燃える日',
+   desc: 'ユミコア → ブルガリアン → ヒップリフト。効いてる感重視。',
+   tasks: ['ユミコア 10分', 'ブルガリアンスクワット 左右10×3', 'ヒップリフト 15×3', 'ワイドスクワット 15×2']
+ },
+ {
+   day: 'Wed', jp: '水', type: 'active', typeLabel: 'RESTORE',
+   title: 'ユミコア',
+   desc: '呼吸と肋骨を取り戻す日。回復寄り。',
+   tasks: ['ユミコア 20分', '深呼吸・ストレッチ 5分']
+ },
+ {
+   day: 'Thu', jp: '木', type: 'active', typeLabel: 'WALK',
+   title: '軽い有酸素',
+   desc: '散歩か軽いウォーキング。ゼーハーしない。',
+   tasks: ['散歩 or 軽い有酸素 30分']
+ },
+ {
+   day: 'Fri', jp: '金', type: 'move', typeLabel: 'BURN',
+   title: '下半身 × 体幹',
+   desc: 'ユミコア → ランジ → 体幹。最後は副交感神経に戻す。',
+   tasks: ['ユミコア 10分', 'ランジ 左右10×3', 'デッドバグ 10×2', 'プランク 30秒×3', 'ストレッチ']
+ },
+ {
+   day: 'Sat', jp: '土', type: 'active', typeLabel: 'FREE',
+   title: 'ユミコア or 好きな運動',
+   desc: '気分で選ぶ。空気感重視。',
+   tasks: ['ユミコア or 好きな運動 20〜30分']
+ },
+ {
+   day: 'Sun', jp: '日', type: 'rest', typeLabel: 'REST',
+   title: '完全回復',
+   desc: '何もしないことが仕事。',
+   tasks: ['深呼吸・ストレッチのみ可']
+ }
+];
+
+let state = {
+ currentWeek: 1,
+ checks: {},
+ waist: []
+};
+
+function loadState() {
+ try {
+   const saved = localStorage.getItem('quietBurn');
+   if (saved) state = { ...state, ...JSON.parse(saved) };
+ } catch (e) {}
+}
+function saveState() {
+ try { localStorage.setItem('quietBurn', JSON.stringify(state)); } catch (e) {}
+}
+
+function renderDays() {
+ const container = document.getElementById('days');
+ container.innerHTML = '';
+
+ let completedDays = 0;
+ weekPlan.forEach((d, dayIdx) => {
+   const allTasks = d.tasks.length;
+   const doneTasks = d.tasks.filter((_, i) =>
+     state.checks[`w${state.currentWeek}-${d.day.toLowerCase()}-${i}`]).length;
+   const allDone = doneTasks === allTasks;
+   if (allDone) completedDays++;
+
+   const dayEl = document.createElement('div');
+   dayEl.className = `day ${allDone ? 'completed' : ''}`;
+   dayEl.innerHTML = `
+     <div class="day-header">
+       <div class="day-name ${(d.day === 'Sat' || d.day === 'Sun') ? 'weekend' : ''}">${d.day}<span style="font-size:12px;color:var(--ink-soft);margin-left:6px;">${d.jp}</span></div>
+       <div class="day-type ${d.type}">${d.typeLabel}</div>
+     </div>
+     <div class="day-content">
+       <div style="color:var(--ink);font-size:15px;margin-bottom:6px;font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;">${d.title}</div>
+       <div>${d.desc}</div>
+     </div>
+     <div class="tasks">
+       ${d.tasks.map((t, i) => {
+         const key = `w${state.currentWeek}-${d.day.toLowerCase()}-${i}`;
+         const checked = state.checks[key];
+         return `
+           <div class="task ${checked ? 'done' : ''}" data-key="${key}">
+             <div class="check"></div>
+             <div class="task-label">${t}</div>
+           </div>`;
+       }).join('')}
+     </div>
+   `;
+   container.appendChild(dayEl);
+ });
+
+ document.querySelectorAll('.task').forEach(taskEl => {
+   taskEl.addEventListener('click', () => {
+     const key = taskEl.dataset.key;
+     state.checks[key] = !state.checks[key];
+     saveState();
+     const dayEl = taskEl.closest('.day');
+     renderDays();
+     updateProgress();
+     setTimeout(() => {
+       const newDays = document.querySelectorAll('.day');
+       newDays.forEach(nd => {
+         if (nd.classList.contains('completed') && !dayEl.classList.contains('completed')) {
+           nd.classList.add('just-completed');
+           setTimeout(() => nd.classList.remove('just-completed'), 1500);
+         }
+       });
+     }, 10);
+   });
+ });
+
+ updateProgress(completedDays);
+}
+
+function updateProgress(completedDays) {
+ if (completedDays === undefined) {
+   completedDays = weekPlan.filter(d =>
+     d.tasks.every((_, i) => state.checks[`w${state.currentWeek}-${d.day.toLowerCase()}-${i}`])
+   ).length;
+ }
+ const totalTasks = weekPlan.reduce((s, d) => s + d.tasks.length, 0);
+ const doneTasks = weekPlan.reduce((s, d) =>
+   s + d.tasks.filter((_, i) => state.checks[`w${state.currentWeek}-${d.day.toLowerCase()}-${i}`]).length, 0);
+ const pct = Math.round((doneTasks / totalTasks) * 100);
+
+ document.getElementById('weekProgress').textContent = `${pct}%`;
+ document.getElementById('weekProgressText').textContent = `${completedDays} / 7 days`;
+ document.getElementById('weekNum').textContent = state.currentWeek;
+}
+
+document.getElementById('prevWeek').addEventListener('click', () => {
+ if (state.currentWeek > 1) {
+   state.currentWeek--;
+   saveState();
+   renderDays();
+ }
+});
+document.getElementById('nextWeek').addEventListener('click', () => {
+ state.currentWeek++;
+ saveState();
+ renderDays();
+});
+
+function todayStr() {
+ const t = new Date();
+ return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+}
+
+document.getElementById('waistDate').value = todayStr();
+
+document.getElementById('addWaist').addEventListener('click', () => {
+ const date = document.getElementById('waistDate').value;
+ const value = parseFloat(document.getElementById('waistValue').value);
+ if (!date || isNaN(value)) return;
+
+ state.waist = state.waist.filter(w => w.date !== date);
+ state.waist.push({ date, value });
+ state.waist.sort((a, b) => a.date.localeCompare(b.date));
+ saveState();
+ document.getElementById('waistValue').value = '';
+ renderWaist();
+});
+
+function renderWaist() {
+ if (state.waist.length === 0) {
+   document.getElementById('latestWaist').innerHTML = '—<span class="stat-unit">cm</span>';
+   document.getElementById('changeWaist').innerHTML = '—<span class="stat-unit">cm</span>';
+   document.getElementById('recordCount').textContent = '0';
+ } else {
+   const latest = state.waist[state.waist.length - 1];
+   const first = state.waist[0];
+   const change = latest.value - first.value;
+   document.getElementById('latestWaist').innerHTML = `${latest.value}<span class="stat-unit">cm</span>`;
+   const changeEl = document.getElementById('changeWaist');
+   const sign = change > 0 ? '+' : '';
+   changeEl.innerHTML = `${sign}${change.toFixed(1)}<span class="stat-unit">cm</span>`;
+   changeEl.className = 'stat-value ' + (change < 0 ? 'negative' : change > 0 ? 'positive' : '');
+   document.getElementById('recordCount').textContent = state.waist.length;
+ }
+
+ const list = document.getElementById('historyList');
+ list.innerHTML = state.waist.slice().reverse().map(w => `
+   <div class="history-item">
+     <span>${w.date}</span>
+     <span style="color:var(--ink);">${w.value} cm</span>
+     <button class="delete-btn" data-date="${w.date}">×</button>
+   </div>
+ `).join('');
+
+ list.querySelectorAll('.delete-btn').forEach(btn => {
+   btn.addEventListener('click', () => {
+     state.waist = state.waist.filter(w => w.date !== btn.dataset.date);
+     saveState();
+     renderWaist();
+   });
+ });
+
+ drawChart();
+}
+
+function drawChart() {
+ const canvas = document.getElementById('chart');
+ const ctx = canvas.getContext('2d');
+ const dpr = window.devicePixelRatio || 1;
+ const rect = canvas.getBoundingClientRect();
+ canvas.width = rect.width * dpr;
+ canvas.height = 220 * dpr;
+ ctx.scale(dpr, dpr);
+
+ const W = rect.width;
+ const H = 220;
+ const pad = { top: 20, right: 20, bottom: 30, left: 40 };
+ ctx.clearRect(0, 0, W, H);
+
+ if (state.waist.length === 0) {
+   ctx.fillStyle = '#4a463e';
+   ctx.font = "italic 14px 'Cormorant Garamond', serif";
+   ctx.textAlign = 'center';
+   ctx.fillText('Awaiting first measurement', W/2, H/2);
+   return;
+ }
+
+ const values = state.waist.map(w => w.value);
+ const minV = Math.min(...values) - 1;
+ const maxV = Math.max(...values) + 1;
+ const range = maxV - minV || 1;
+ const plotW = W - pad.left - pad.right;
+ const plotH = H - pad.top - pad.bottom;
+
+ ctx.strokeStyle = '#1d1b17';
+ ctx.lineWidth = 1;
+ for (let i = 0; i <= 4; i++) {
+   const y = pad.top + (plotH * i / 4);
+   ctx.beginPath();
+   ctx.moveTo(pad.left, y);
+   ctx.lineTo(W - pad.right, y);
+   ctx.stroke();
+
+   const val = maxV - (range * i / 4);
+   ctx.fillStyle = '#4a463e';
+   ctx.font = "10px 'JetBrains Mono', monospace";
+   ctx.textAlign = 'right';
+   ctx.fillText(val.toFixed(1), pad.left - 8, y + 3);
+ }
+
+ if (state.waist.length > 1) {
+   ctx.strokeStyle = '#d97a3a';
+   ctx.lineWidth = 1.5;
+   ctx.beginPath();
+   state.waist.forEach((w, i) => {
+     const x = pad.left + (plotW * i / (state.waist.length - 1));
+     const y = pad.top + plotH - (plotH * (w.value - minV) / range);
+     if (i === 0) ctx.moveTo(x, y);
+     else ctx.lineTo(x, y);
+   });
+   ctx.stroke();
+
+   ctx.lineTo(pad.left + plotW, pad.top + plotH);
+   ctx.lineTo(pad.left, pad.top + plotH);
+   ctx.closePath();
+   const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
+   grad.addColorStop(0, 'rgba(217, 122, 58, 0.15)');
+   grad.addColorStop(1, 'rgba(217, 122, 58, 0)');
+   ctx.fillStyle = grad;
+   ctx.fill();
+ }
+
+ state.waist.forEach((w, i) => {
+   const x = state.waist.length === 1
+     ? W/2
+     : pad.left + (plotW * i / (state.waist.length - 1));
+   const y = pad.top + plotH - (plotH * (w.value - minV) / range);
+   ctx.fillStyle = '#0e0d0b';
+   ctx.beginPath();
+   ctx.arc(x, y, 4, 0, Math.PI * 2);
+   ctx.fill();
+   ctx.strokeStyle = '#d97a3a';
+   ctx.lineWidth = 1.5;
+   ctx.stroke();
+
+   if (state.waist.length <= 6 || i === 0 || i === state.waist.length - 1) {
+     ctx.fillStyle = '#8a8478';
+     ctx.font = "9px 'JetBrains Mono', monospace";
+     ctx.textAlign = 'center';
+     ctx.fillText(w.date.slice(5), x, H - 10);
+   }
+ });
+}
+
+window.addEventListener('resize', drawChart);
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+ if (confirm('全てのデータをリセットしますか？この操作は取り消せません。')) {
+   state = { currentWeek: 1, checks: {}, waist: [] };
+   saveState();
+   renderDays();
+   renderWaist();
+ }
+});
+
+loadState();
+renderDays();
+renderWaist();
+</script>
+
+</body>
+</html>
