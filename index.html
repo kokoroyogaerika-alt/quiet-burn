@@ -120,6 +120,7 @@
  .section:nth-of-type(1) { animation-delay: 1.0s; }
  .section:nth-of-type(2) { animation-delay: 1.2s; }
  .section:nth-of-type(3) { animation-delay: 1.4s; }
+ .section:nth-of-type(4) { animation-delay: 1.5s; }
 
  .section-header {
    display: flex;
@@ -263,14 +264,13 @@
    font-size: 14px;
    margin-bottom: 16px;
    line-height: 1.7;
-   padding-left: 96px;
  }
 
  .tasks {
-   padding-left: 96px;
    display: flex;
    flex-direction: column;
    gap: 8px;
+   margin-bottom: 16px;
  }
 
  .task {
@@ -316,6 +316,7 @@
    font-size: 13px;
    color: var(--ink);
    transition: color 0.3s ease;
+   flex: 1;
  }
 
  .task.done .task-label {
@@ -324,10 +325,145 @@
    text-decoration-color: var(--ember-soft);
  }
 
+ .extras {
+   margin-top: 12px;
+   padding-top: 12px;
+   border-top: 1px dashed var(--line);
+ }
+
+ .extras-label {
+   font-family: 'JetBrains Mono', monospace;
+   font-size: 9px;
+   color: var(--gold);
+   letter-spacing: 0.2em;
+   text-transform: uppercase;
+   margin-bottom: 8px;
+ }
+
+ .extra-item {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   padding: 4px 0;
+   font-size: 13px;
+   color: var(--ink);
+ }
+
+ .extra-item::before {
+   content: '+';
+   color: var(--gold);
+   font-family: 'JetBrains Mono', monospace;
+   font-weight: 400;
+   flex-shrink: 0;
+ }
+
+ .extra-item .extra-text {
+   flex: 1;
+ }
+
+ .extra-item .remove-extra {
+   background: none;
+   border: none;
+   color: var(--ink-faint);
+   cursor: pointer;
+   font-size: 14px;
+   padding: 0 4px;
+ }
+
+ .extra-item .remove-extra:hover { color: var(--ember); }
+
+ .add-extra-row {
+   display: flex;
+   gap: 8px;
+   margin-top: 8px;
+ }
+
+ .add-extra-row input {
+   flex: 1;
+   background: var(--bg);
+   border: 1px solid var(--line);
+   color: var(--ink);
+   padding: 6px 10px;
+   font-family: 'Noto Serif JP', serif;
+   font-size: 12px;
+ }
+
+ .add-extra-row input:focus {
+   outline: none;
+   border-color: var(--gold);
+ }
+
+ .add-extra-row button {
+   background: none;
+   border: 1px solid var(--gold);
+   color: var(--gold);
+   padding: 6px 12px;
+   font-family: 'JetBrains Mono', monospace;
+   font-size: 10px;
+   letter-spacing: 0.1em;
+   cursor: pointer;
+ }
+
+ .add-extra-row button:hover {
+   background: var(--gold);
+   color: var(--bg);
+ }
+
+ .memo-row {
+   margin-top: 12px;
+   padding-top: 12px;
+   border-top: 1px dashed var(--line);
+ }
+
+ .memo-label {
+   font-family: 'JetBrains Mono', monospace;
+   font-size: 9px;
+   color: var(--ink-soft);
+   letter-spacing: 0.2em;
+   text-transform: uppercase;
+   margin-bottom: 8px;
+ }
+
+ .memo-input {
+   width: 100%;
+   background: var(--bg);
+   border: 1px solid var(--line);
+   color: var(--ink);
+   padding: 10px 12px;
+   font-family: 'Noto Serif JP', serif;
+   font-size: 13px;
+   line-height: 1.6;
+   resize: vertical;
+   min-height: 60px;
+   transition: border-color 0.3s ease;
+ }
+
+ .memo-input:focus {
+   outline: none;
+   border-color: var(--ember);
+ }
+
+ .memo-input::placeholder {
+   color: var(--ink-faint);
+   font-style: italic;
+ }
+
  @media (min-width: 640px) {
-   .day-content, .tasks { padding-left: 0; }
-   .day { display: grid; grid-template-columns: 100px 1fr 1.2fr; gap: 24px; align-items: start; }
-   .day-header { margin-bottom: 0; flex-direction: column; align-items: flex-start; gap: 8px; }
+   .day {
+     display: grid;
+     grid-template-columns: 100px 1fr 1.2fr;
+     gap: 24px;
+     align-items: start;
+   }
+   .day-header {
+     margin-bottom: 0;
+     flex-direction: column;
+     align-items: flex-start;
+     gap: 8px;
+   }
+   .day-extras-wrap {
+     grid-column: 1 / -1;
+   }
  }
 
  .waist-section {
@@ -376,9 +512,7 @@
    background: var(--gold);
  }
 
- .chart-wrap {
-   margin-bottom: 24px;
- }
+ .chart-wrap { margin-bottom: 24px; }
 
  #chart {
    width: 100%;
@@ -394,9 +528,7 @@
    border-top: 1px solid var(--line);
  }
 
- .stat {
-   text-align: center;
- }
+ .stat { text-align: center; }
 
  .stat-label {
    font-family: 'JetBrains Mono', monospace;
@@ -644,17 +776,34 @@ const weekPlan = [
 let state = {
  currentWeek: 1,
  checks: {},
- waist: []
+ waist: [],
+ memos: {},
+ extras: {}
 };
 
 function loadState() {
  try {
    const saved = localStorage.getItem('quietBurn');
    if (saved) state = { ...state, ...JSON.parse(saved) };
+   if (!state.memos) state.memos = {};
+   if (!state.extras) state.extras = {};
  } catch (e) {}
 }
 function saveState() {
  try { localStorage.setItem('quietBurn', JSON.stringify(state)); } catch (e) {}
+}
+
+function dayKey(d) {
+ return `w${state.currentWeek}-${d.day.toLowerCase()}`;
+}
+
+function escapeHtml(s) {
+ return String(s)
+   .replace(/&/g, '&amp;')
+   .replace(/</g, '&lt;')
+   .replace(/>/g, '&gt;')
+   .replace(/"/g, '&quot;')
+   .replace(/'/g, '&#039;');
 }
 
 function renderDays() {
@@ -669,6 +818,10 @@ function renderDays() {
    const allDone = doneTasks === allTasks;
    if (allDone) completedDays++;
 
+   const dKey = dayKey(d);
+   const extras = state.extras[dKey] || [];
+   const memo = state.memos[dKey] || '';
+
    const dayEl = document.createElement('div');
    dayEl.className = `day ${allDone ? 'completed' : ''}`;
    dayEl.innerHTML = `
@@ -677,19 +830,40 @@ function renderDays() {
        <div class="day-type ${d.type}">${d.typeLabel}</div>
      </div>
      <div class="day-content">
-       <div style="color:var(--ink);font-size:15px;margin-bottom:6px;font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;">${d.title}</div>
+       <div style="color:var(--ink);margin-bottom:6px;font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;">${d.title}</div>
        <div>${d.desc}</div>
      </div>
-     <div class="tasks">
-       ${d.tasks.map((t, i) => {
-         const key = `w${state.currentWeek}-${d.day.toLowerCase()}-${i}`;
-         const checked = state.checks[key];
-         return `
-           <div class="task ${checked ? 'done' : ''}" data-key="${key}">
-             <div class="check"></div>
-             <div class="task-label">${t}</div>
-           </div>`;
-       }).join('')}
+     <div class="day-extras-wrap">
+       <div class="tasks">
+         ${d.tasks.map((t, i) => {
+           const key = `w${state.currentWeek}-${d.day.toLowerCase()}-${i}`;
+           const checked = state.checks[key];
+           return `
+             <div class="task ${checked ? 'done' : ''}" data-key="${key}">
+               <div class="check"></div>
+               <div class="task-label">${escapeHtml(t)}</div>
+             </div>`;
+         }).join('')}
+       </div>
+
+       <div class="extras">
+         <div class="extras-label">+ Bonus / 追加でやれたこと</div>
+         ${extras.map((ex, i) => `
+           <div class="extra-item">
+             <span class="extra-text">${escapeHtml(ex)}</span>
+             <button class="remove-extra" data-daykey="${dKey}" data-idx="${i}">×</button>
+           </div>
+         `).join('')}
+         <div class="add-extra-row">
+           <input type="text" class="extra-input" data-daykey="${dKey}" placeholder="例：階段使った、夜ストレッチ…" maxlength="100">
+           <button class="add-extra-btn" data-daykey="${dKey}">ADD</button>
+         </div>
+       </div>
+
+       <div class="memo-row">
+         <div class="memo-label">— Note / 一言メモ</div>
+         <textarea class="memo-input" data-daykey="${dKey}" placeholder="今日の気分・体調・気づき…">${escapeHtml(memo)}</textarea>
+       </div>
      </div>
    `;
    container.appendChild(dayEl);
@@ -701,17 +875,71 @@ function renderDays() {
      state.checks[key] = !state.checks[key];
      saveState();
      const dayEl = taskEl.closest('.day');
+     const wasCompleted = dayEl.classList.contains('completed');
      renderDays();
      updateProgress();
-     setTimeout(() => {
-       const newDays = document.querySelectorAll('.day');
-       newDays.forEach(nd => {
-         if (nd.classList.contains('completed') && !dayEl.classList.contains('completed')) {
-           nd.classList.add('just-completed');
-           setTimeout(() => nd.classList.remove('just-completed'), 1500);
-         }
-       });
-     }, 10);
+     if (!wasCompleted) {
+       setTimeout(() => {
+         const newDays = document.querySelectorAll('.day');
+         newDays.forEach(nd => {
+           if (nd.classList.contains('completed')) {
+             const sameDay = nd.querySelector(`[data-key="${key}"]`);
+             if (sameDay) {
+               nd.classList.add('just-completed');
+               setTimeout(() => nd.classList.remove('just-completed'), 1500);
+             }
+           }
+         });
+       }, 10);
+     }
+   });
+ });
+
+ document.querySelectorAll('.add-extra-btn').forEach(btn => {
+   btn.addEventListener('click', () => {
+     const dKey = btn.dataset.daykey;
+     const input = document.querySelector(`.extra-input[data-daykey="${dKey}"]`);
+     const text = input.value.trim();
+     if (!text) return;
+     if (!state.extras[dKey]) state.extras[dKey] = [];
+     state.extras[dKey].push(text);
+     saveState();
+     renderDays();
+   });
+ });
+
+ document.querySelectorAll('.extra-input').forEach(input => {
+   input.addEventListener('keydown', (e) => {
+     if (e.key === 'Enter') {
+       e.preventDefault();
+       const btn = document.querySelector(`.add-extra-btn[data-daykey="${input.dataset.daykey}"]`);
+       btn.click();
+     }
+   });
+ });
+
+ document.querySelectorAll('.remove-extra').forEach(btn => {
+   btn.addEventListener('click', () => {
+     const dKey = btn.dataset.daykey;
+     const idx = parseInt(btn.dataset.idx);
+     if (state.extras[dKey]) {
+       state.extras[dKey].splice(idx, 1);
+       saveState();
+       renderDays();
+     }
+   });
+ });
+
+ document.querySelectorAll('.memo-input').forEach(textarea => {
+   textarea.addEventListener('blur', () => {
+     const dKey = textarea.dataset.daykey;
+     const val = textarea.value.trim();
+     if (val) {
+       state.memos[dKey] = val;
+     } else {
+       delete state.memos[dKey];
+     }
+     saveState();
    });
  });
 
@@ -897,7 +1125,7 @@ window.addEventListener('resize', drawChart);
 
 document.getElementById('resetBtn').addEventListener('click', () => {
  if (confirm('全てのデータをリセットしますか？この操作は取り消せません。')) {
-   state = { currentWeek: 1, checks: {}, waist: [] };
+   state = { currentWeek: 1, checks: {}, waist: [], memos: {}, extras: {} };
    saveState();
    renderDays();
    renderWaist();
